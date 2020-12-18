@@ -104,7 +104,7 @@ public class ImageController {
         } else {
             String error = "Only the owner of the image can edit the image";
             String imageTitle = imageService.getImage(imageId).getTitle();
-            redirectAttr.addAttribute("id", imageId).addFlashAttribute("editError", error);
+            redirectAttr.addAttribute("editError", error).addFlashAttribute("editError", error);
             return "redirect:/images/" + imageId + '/' + imageTitle;
         }
 
