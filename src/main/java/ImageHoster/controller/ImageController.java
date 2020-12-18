@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -92,13 +93,22 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
+    public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session, RedirectAttributes redirectAttr) {
         Image image = imageService.getImage(imageId);
 
-        String tags = convertTagsToString(image.getTags());
-        model.addAttribute("image", image);
-        model.addAttribute("tags", tags);
-        return "images/edit";
+        if(checkIfLoggedInUserIsImageOwner(imageId, session)){
+            String tags = convertTagsToString(image.getTags());
+            model.addAttribute("image", image);
+            model.addAttribute("tags", tags);
+            return "images/edit";
+        } else {
+            String error = "Only the owner of the image can edit the image";
+            String imageTitle = imageService.getImage(imageId).getTitle();
+            redirectAttr.addAttribute("id", imageId).addFlashAttribute("editError", error);
+            return "redirect:/images/" + imageId + '/' + imageTitle;
+        }
+
+
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
@@ -187,4 +197,23 @@ public class ImageController {
 
         return tagString.toString();
     }
+
+
+    // This method checks if the currently logged-in user is the owner of the selected image and returns true or false
+    private Boolean checkIfLoggedInUserIsImageOwner(Integer imageId, HttpSession session) {
+        //Get Selected Image Data using imageId
+        Image selectedImageData = imageService.getImage(imageId);
+
+        //Get Owner Id of the selected Image
+        Integer selectedImageOwnerId = selectedImageData.getUser().getId();
+
+        //Get currently Logged-in User's Id
+        User loggedInUser = (User) session.getAttribute("loggeduser");
+
+        Integer loggedInUserId = loggedInUser.getId();
+
+        return loggedInUserId.equals(selectedImageOwnerId);
+    }
+
+
 }
