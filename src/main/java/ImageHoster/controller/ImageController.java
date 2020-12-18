@@ -150,9 +150,17 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
-        imageService.deleteImage(imageId);
-        return "redirect:/images";
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session, RedirectAttributes redirectAttr) {
+        //Check if the logged-in user is the owner of the image then delete the image or else add error message
+        if(checkIfLoggedInUserIsImageOwner(imageId, session)){
+            imageService.deleteImage(imageId);
+            return "redirect:/images";
+        } else {
+            String error = "Only the owner of the image can delete the image";
+            String imageTitle = imageService.getImage(imageId).getTitle();
+            redirectAttr.addAttribute("id", imageId).addFlashAttribute("deleteError", error);
+            return "redirect:/images/" + imageId + '/' + imageTitle;
+        }
     }
 
 
