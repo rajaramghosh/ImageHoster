@@ -96,6 +96,9 @@ public class ImageController {
     public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session, RedirectAttributes redirectAttr) {
         Image image = imageService.getImage(imageId);
 
+        // Allow logged-in user to edit the image only if the logged-in user is the owner of the image
+        // otherwise send error message
+
         if(checkIfLoggedInUserIsImageOwner(imageId, session)){
             String tags = convertTagsToString(image.getTags());
             model.addAttribute("image", image);
@@ -151,7 +154,10 @@ public class ImageController {
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
     public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, Model model, HttpSession session, RedirectAttributes redirectAttr) {
-        //Check if the logged-in user is the owner of the image then delete the image or else add error message
+
+        // Allow logged-in user to delete the image only if the logged-in user is the owner of the image
+        // otherwise send error message
+
         if(checkIfLoggedInUserIsImageOwner(imageId, session)){
             imageService.deleteImage(imageId);
             return "redirect:/images";
@@ -207,7 +213,8 @@ public class ImageController {
     }
 
 
-    // This method checks if the currently logged-in user is the owner of the selected image and returns true or false
+    // This method checks if the currently logged-in user is the owner of the selected image
+    // and returns true or false
     private Boolean checkIfLoggedInUserIsImageOwner(Integer imageId, HttpSession session) {
         //Get Selected Image Data using imageId
         Image selectedImageData = imageService.getImage(imageId);
@@ -222,6 +229,4 @@ public class ImageController {
 
         return loggedInUserId.equals(selectedImageOwnerId);
     }
-
-
 }
