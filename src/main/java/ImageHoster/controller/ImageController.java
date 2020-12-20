@@ -51,6 +51,7 @@ public class ImageController {
         Image image = imageService.getImage(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments", image.getComments());
         return "images/image";
     }
 
@@ -103,6 +104,7 @@ public class ImageController {
             String tags = convertTagsToString(image.getTags());
             model.addAttribute("image", image);
             model.addAttribute("tags", tags);
+            model.addAttribute("comments", image.getComments());
             return "images/edit";
         } else {
             String error = "Only the owner of the image can edit the image";
